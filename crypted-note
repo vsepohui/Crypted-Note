@@ -84,8 +84,8 @@ $window->add($scrolled_window);
 
 	
 # a textview
-$textview2 = Gtk3::TextView->new();
-
+$textview2 = Gtk3::Entry->new();
+$textview2->set_visibility(FALSE);
 
 #$window->add($button);
 input_password_dialog();
@@ -120,7 +120,7 @@ sub input_password_dialog {
 	# displays the buffer
 	#$textview2->set_buffer($buffer2);
 	# wrap the text, if needed, breaking lines in between words
-	$textview2->set_wrap_mode('word');
+	#$textview2->set_wrap_mode('word');
 	
 	# textview is scrolled
 	$content_area->add($textview2);
@@ -137,9 +137,9 @@ sub input_password_dialog {
 sub on_set_password {
 	my ($widget, $response_id) = @_;
 	
-	my $b = $textview2->get_buffer;
-	$password = $b->get_text($b->get_start_iter, $b->get_end_iter, TRUE) or return;
-	$crypter = new Crypter(password => $password);
+	#my $b = $textview2->get_buffer;
+	$password = $textview2->get_text();
+	$crypter = new Crypter(password => $password) or return;
 	
 	my $fh;
 	open $fh, $NOTE_FILE;
@@ -248,6 +248,5 @@ sub save_cb {
 
 # callback function for "quit"
 sub quit_cb {
-	print "You have quit \n";
 	$app->quit();
 }
