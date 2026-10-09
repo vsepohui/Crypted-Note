@@ -248,7 +248,6 @@ sub save_cb {
 	utf8::upgrade($text);
 	
 	my $out = '';
-	my $crypter = new Crypter(password => $password);
 	$crypter->crypt(input => $text, output => \$out);
 	
 	my $fh;
