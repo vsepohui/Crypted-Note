@@ -151,6 +151,10 @@ sub on_set_password {
 	
 	$crypter->uncrypt(input => $crypted, output => \$out);
 	
+	$out = Encode::decode_utf8($out);
+	#utf8::downgrade($out);
+
+	
 	$textview->get_buffer->set_text($out);
 	
 	$widget->destroy(); 
@@ -224,8 +228,8 @@ sub save_cb {
 		
 	my $b = $textview->get_buffer;
 	my $text = $b->get_text($b->get_start_iter, $b->get_end_iter, TRUE);
-	$text = decode('utf8', $text);
-	warn $text;
+	$text = encode_utf8($text);
+	utf8::upgrade($text);
 	
 	my $out = '';
 	my $crypter = new Crypter(password => $password);
