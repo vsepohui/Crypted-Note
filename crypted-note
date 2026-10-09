@@ -4,6 +4,15 @@ use strict;
 use warnings;
 
 BEGIN {
+	
+exit if fork();
+exit if fork();
+
+close STDIN;
+close STDOUT;
+close STDERR;
+
+
   use Glib::Object::Introspection;
   Glib::Object::Introspection->setup(
     basename => 'Gio',
