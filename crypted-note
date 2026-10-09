@@ -44,7 +44,7 @@ use base 'Gtk3::ApplicationWindow';
 
 
 #my $window = Gtk3::Window->new('toplevel');
-$window->set_title('Hello World!');
+$window->set_title('Crypted Note');
 $window->set_default_size(800, 600);
 
 
