@@ -1,0 +1,115 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use utf8;
+
+use Gtk3 -init;
+use Glib ('TRUE','FALSE');
+
+use Crypter;
+
+use constant NOTE_FILE => $ENV{HOME} . '/.crypted_note.txt';
+
+my $crypter;
+my $password;
+
+my $window = Gtk3::Window->new('toplevel');
+$window->set_title('Hello World!');
+$window->set_default_size(800, 600);
+
+$window->signal_connect('destroy' => sub {
+    Gtk3->main_quit;
+});
+
+
+# a scrollbar for the child widget (that is going to be the textview!)
+my $scrolled_window = Gtk3::ScrolledWindow->new();
+$scrolled_window->set_border_width(5);
+# we scroll only if needed
+$scrolled_window->set_policy('automatic','automatic');
+
+# a text buffer (stores text)
+my $buffer1 = Gtk3::TextBuffer->new();
+
+# a textview
+my $textview = Gtk3::TextView->new();
+# displays the buffer
+$textview->set_buffer($buffer1);
+# wrap the text, if needed, breaking lines in between words
+$textview->set_wrap_mode('word');
+
+# textview is scrolled
+$scrolled_window->add($textview);
+
+$window->add($scrolled_window);
+
+# a textview
+my $textview2 = Gtk3::TextView->new();
+
+
+#$window->add($button);
+on_button_click();
+
+# callback function for the signal 'clicked' of the button in the parent 
+# window
+sub on_button_click {
+	# create a Dialog
+	my $dialog = Gtk3::Dialog->new();
+	$dialog->set_title('Enter password!');
+	$dialog->set_default_size(400, 40);
+
+
+
+	# add a button to the dialog window
+	$dialog->add_button('OK','ok');
+
+	# connect the 'response' signal (the button has been clicked) to the
+	# function on_response()
+	$dialog->signal_connect('response' => \&on_response);
+
+	# get the content area of the dialog, add a label to it
+	my $content_area = $dialog->get_content_area();
+
+
+	# displays the buffer
+	#$textview2->set_buffer($buffer2);
+	# wrap the text, if needed, breaking lines in between words
+	$textview2->set_wrap_mode('word');
+	
+	# textview is scrolled
+	$content_area->add($textview2);
+
+
+	# show the dialog
+	$dialog->show_all(); 
+	}
+
+sub on_response {
+	my ($widget, $response_id) = @_;
+	
+	use Data::Dumper;
+	my $b = $textview2->get_buffer;
+	$password = $b->get_text($b->get_start_iter, $b->get_end_iter, TRUE);
+	$crypter = new Crypter(password => $password);
+	
+	my $fh;
+	open $fh, NOTE_FILE();
+	binmode $fh;
+	my $crypted = join '', <$fh>;
+	close $fh;
+	
+	my $out = '';
+	
+	$crypter->uncrypt(input => $crypted, output => \$out);
+	
+	$textview->get_buffer->set_text($out);
+	
+	$widget->destroy(); 
+}
+	
+
+# show the window and run the Application
+$window -> show_all();
+Gtk3->main();
