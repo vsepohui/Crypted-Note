@@ -155,8 +155,6 @@ sub on_set_password {
 	warn $password;
 	
 	
-	$crypter = new Crypter(password => $password) or return;
-	
 	my $fh;
 	open $fh, $NOTE_FILE;
 	binmode $fh;
@@ -165,7 +163,7 @@ sub on_set_password {
 	
 	my $out = '';
 	
-	$crypter->uncrypt(input => $crypted, output => \$out);
+	Crypter::uncrypt(password => $password, input => $crypted, output => \$out);
 	
 	$out = Encode::decode_utf8($out);
 	#utf8::downgrade($out);
@@ -248,7 +246,7 @@ sub save_cb {
 	utf8::upgrade($text);
 	
 	my $out = '';
-	$crypter->crypt(input => $text, output => \$out);
+	Crypter::crypt(password => $password, input => $text, output => \$out);
 	
 	my $fh;
 	open $fh, '>', $NOTE_FILE;
