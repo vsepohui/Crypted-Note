@@ -3,25 +3,57 @@
 use strict;
 use warnings;
 
-use utf8;
+BEGIN {
+  use Glib::Object::Introspection;
+  Glib::Object::Introspection->setup(
+    basename => 'Gio',
+    version => '2.0',
+    package => 'Glib::IO');
+}
 
-use Gtk3 -init;
+use Gtk3;
 use Glib ('TRUE','FALSE');
 
 use Crypter;
+use Encode;
+use utf8;
 
-use constant NOTE_FILE => $ENV{HOME} . '/.crypted_note.txt';
+my $NOTE_FILE = $ENV{HOME} . '/.crypted_note.txt';
+
+my $textview2;
+my $textview;
 
 my $crypter;
 my $password;
 
-my $window = Gtk3::Window->new('toplevel');
+ 
+
+# The CLASS MyWindow, where we build the Gtk3::ApplicationWindow and its content
+package MyWindow;
+use strict;
+use warnings;
+use Gtk3;
+use Glib qw/TRUE FALSE/;
+# Our class must be a subclass of Gtk3::ApplicationWindow to inherit
+# the methods, properties etc.pp. of Gtk3::ApplicationWindow
+use base 'Gtk3::ApplicationWindow';
+ 
+ sub new {
+ 	my ($window, $app) = @_;
+ 	$window = bless Gtk3::ApplicationWindow->new($app);
+
+
+#my $window = Gtk3::Window->new('toplevel');
 $window->set_title('Hello World!');
 $window->set_default_size(800, 600);
 
-$window->signal_connect('destroy' => sub {
-    Gtk3->main_quit;
-});
+
+my $accel_group = Gtk3::AccelGroup->new;
+$window->add_accel_group($accel_group);
+
+$window->signal_connect('delete_event' => sub {
+    Gtk3->main_quit 
+});	
 
 
 # a scrollbar for the child widget (that is going to be the textview!)
@@ -34,7 +66,7 @@ $scrolled_window->set_policy('automatic','automatic');
 my $buffer1 = Gtk3::TextBuffer->new();
 
 # a textview
-my $textview = Gtk3::TextView->new();
+$textview = Gtk3::TextView->new();
 # displays the buffer
 $textview->set_buffer($buffer1);
 # wrap the text, if needed, breaking lines in between words
@@ -42,19 +74,31 @@ $textview->set_wrap_mode('word');
 
 # textview is scrolled
 $scrolled_window->add($textview);
-
+$scrolled_window->show();
 $window->add($scrolled_window);
 
+
+
+
+
+
+	
 # a textview
-my $textview2 = Gtk3::TextView->new();
+$textview2 = Gtk3::TextView->new();
 
 
 #$window->add($button);
-on_button_click();
+input_password_dialog();
 
-# callback function for the signal 'clicked' of the button in the parent 
-# window
-sub on_button_click {
+# show the window and run the Application
+$window -> show_all();
+#Gtk3->main();
+
+
+	return $window;
+}
+
+sub input_password_dialog {
 	# create a Dialog
 	my $dialog = Gtk3::Dialog->new();
 	$dialog->set_title('Enter password!');
@@ -67,7 +111,7 @@ sub on_button_click {
 
 	# connect the 'response' signal (the button has been clicked) to the
 	# function on_response()
-	$dialog->signal_connect('response' => \&on_response);
+	$dialog->signal_connect('response' => \&on_set_password);
 
 	# get the content area of the dialog, add a label to it
 	my $content_area = $dialog->get_content_area();
@@ -84,18 +128,21 @@ sub on_button_click {
 
 	# show the dialog
 	$dialog->show_all(); 
-	}
+}
 
-sub on_response {
+
+
+
+
+sub on_set_password {
 	my ($widget, $response_id) = @_;
 	
-	use Data::Dumper;
 	my $b = $textview2->get_buffer;
-	$password = $b->get_text($b->get_start_iter, $b->get_end_iter, TRUE);
+	$password = $b->get_text($b->get_start_iter, $b->get_end_iter, TRUE) or return;
 	$crypter = new Crypter(password => $password);
 	
 	my $fh;
-	open $fh, NOTE_FILE();
+	open $fh, $NOTE_FILE;
 	binmode $fh;
 	my $crypted = join '', <$fh>;
 	close $fh;
@@ -110,6 +157,93 @@ sub on_response {
 }
 	
 
-# show the window and run the Application
-$window -> show_all();
-Gtk3->main();
+
+
+# The MAIN FUNCTION should be as small as possible and do almost nothing except creating 
+# your Gtk3::Application and running it
+# The "real work" should always be done in response to the signals fired by Gtk3::Application.
+# see below
+package main;
+use strict;
+use warnings;
+ 
+use Gtk3;
+use Glib ('TRUE', 'FALSE');
+
+my $app = Gtk3::Application->new('app.id', 'flags-none');
+ 
+$app->signal_connect('startup'  => \&_init     );
+$app->signal_connect('activate' => \&_build_ui );
+ 
+$app->run(\@ARGV);
+ 
+exit;
+
+
+
+
+
+# The CALLBACK FUNCTIONS to the SIGNALS fired by the main function.
+# Here we do the "real work" (see above)
+sub _init {
+	my ($app) = @_;
+	
+	# create a menu
+	my $menu = Glib::IO::Menu->new();
+	
+	# append to the menu three options
+	$menu->append('Save', 'app.save');
+	$menu->append('Quit','app.quit');
+	# set the menu as menu of the application
+	$app->set_app_menu($menu);
+	
+	# create an actionfor the option "new" of the menu
+	my $save_action = Glib::IO::SimpleAction->new('save',undef);
+	# connect it to the callback  function new_cb
+	$save_action->signal_connect('activate'=>\&save_cb);
+	# add the action to the application
+	$app->add_action($save_action);
+		
+	# option "quit"
+	my $quit_action = Glib::IO::SimpleAction->new('quit',undef);
+	$quit_action->signal_connect('activate'=>\&quit_cb);
+	$app->add_action($quit_action);
+}
+
+sub _build_ui {
+	my ($app) = @_;
+	my $window = MyWindow->new($app);
+	$window->show();
+}
+
+
+
+# callback function for "new"
+sub save_cb {
+	
+		
+	my $b = $textview->get_buffer;
+	my $text = $b->get_text($b->get_start_iter, $b->get_end_iter, TRUE);
+	$text = decode('utf8', $text);
+	warn $text;
+	
+	my $out = '';
+	my $crypter = new Crypter(password => $password);
+	$crypter->crypt(input => $text, output => \$out);
+	
+	my $fh;
+	open $fh, '>', $NOTE_FILE;
+	binmode $fh;
+	print $fh $out;
+	close $fh;
+
+
+	
+}
+
+
+# callback function for "quit"
+sub quit_cb {
+	print "You have quit \n";
+	$app->quit();
+}
