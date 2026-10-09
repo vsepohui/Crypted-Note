@@ -5,12 +5,12 @@ use warnings;
 
 BEGIN {
 	
-exit if fork();
-exit if fork();
+#exit if fork();
+#exit if fork();
 
-close STDIN;
-close STDOUT;
-close STDERR;
+#close STDIN;
+#close STDOUT;
+#close STDERR;
 
 
   use Glib::Object::Introspection;
@@ -148,6 +148,13 @@ sub on_set_password {
 	
 	#my $b = $textview2->get_buffer;
 	$password = $textview2->get_text();
+
+	$password = Encode::encode_utf8($password);
+	utf8::upgrade($password);
+	
+	warn $password;
+	
+	
 	$crypter = new Crypter(password => $password) or return;
 	
 	my $fh;
