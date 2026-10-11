@@ -3,7 +3,7 @@ crypted-note: crypt your personal note-file!
 
 # Dependencies
 
-Install Crypter from Git
+Install Crypter from GitHub
 
 ```
 https://github.com/vsepohui/Crypter/
