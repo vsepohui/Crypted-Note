@@ -27,7 +27,10 @@ use Crypter;
 use Encode;
 use utf8;
 
-my $NOTE_FILE = $ENV{CRYPTED_NOTE_FILE} || $ENV{HOME} . '/.crypted_note.txt';
+my $NOTE_FILE = $ENV{CRYPTED_NOTE_FILE} || ($ENV{HOME} . '/.crypted_note.txt');
+my $OBFUSCATE_LEVEL = 100;
+
+warn $NOTE_FILE;
 
 my $textview2;
 my $textview;
@@ -163,7 +166,7 @@ sub on_set_password {
 	
 	my $out = '';
 	
-	Crypter::uncrypt(password => $password, input => $crypted, output => \$out);
+	Crypter::uncrypt(password => $password, obfuscate => $OBFUSCATE_LEVEL, input => $crypted, output => \$out);
 	
 	$out = Encode::decode_utf8($out);
 	#utf8::downgrade($out);
@@ -246,7 +249,7 @@ sub save_cb {
 	utf8::upgrade($text);
 	
 	my $out = '';
-	Crypter::crypt(password => $password, input => $text, output => \$out);
+	Crypter::crypt(password => $password, obfuscate => $OBFUSCATE_LEVEL, input => $text, output => \$out);
 	
 	my $fh;
 	open $fh, '>', $NOTE_FILE;
