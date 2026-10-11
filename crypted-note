@@ -27,7 +27,7 @@ use Crypter;
 use Encode;
 use utf8;
 
-my $NOTE_FILE = $ENV{HOME} . '/.crypted_note.txt';
+my $NOTE_FILE = $ENV{CRYPTED_NOTE_FILE} || $ENV{HOME} . '/.crypted_note.txt';
 
 my $textview2;
 my $textview;
