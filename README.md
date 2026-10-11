@@ -26,3 +26,9 @@ For setup custom file path set ENV CRYPTED_NOTE_FILE:
 echo 'export ENV=/home/user/custom-file.txt' >> ~/.bashrc
 source ~/.bashrc
 ```
+
+# Credits
+
+crypted-note coded by Ivan Trunaev, Russia, Uray.
+
+Based on perl lib Crypted, coded by me.
