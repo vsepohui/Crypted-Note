@@ -9,6 +9,12 @@ Install Crypter from GitHub
 https://github.com/vsepohui/Crypter/
 ```
 
+Install Perl packages:
+
+```
+sudo cpan install Gtk3 Glib Glib::Object::Introspection
+```
+
 # Installation
 
 ```
