@@ -13,7 +13,7 @@ crypted-note keep crypted date in file ~/.crypted_note.txt
 For setup custom file path set ENV CRYPTED_NOTE_FILE:
 
 ```
-echo 'export ENV=/home/user/custom-file.txt' >> ~/.bashrc
+echo 'export CRYPTED_NOTE_FILE=/home/user/custom-file.txt' >> ~/.bashrc
 source ~/.bashrc
 ```
 
