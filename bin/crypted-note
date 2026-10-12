@@ -166,7 +166,8 @@ sub on_set_password {
 	
 	my $out = '';
 	
-	Crypter::uncrypt(password => $password, obfuscate => $OBFUSCATE_LEVEL, input => $crypted, output => \$out);
+	my $crypter = new Crypter(password => $password, obfuscate => $OBFUSCATE_LEVEL);
+	my $out = $crypter->uncrypt($crypted);
 	
 	$out = Encode::decode_utf8($out);
 	#utf8::downgrade($out);
@@ -249,8 +250,10 @@ sub save_cb {
 	utf8::upgrade($text);
 	
 	my $out = '';
-	Crypter::crypt(password => $password, obfuscate => $OBFUSCATE_LEVEL, input => $text, output => \$out);
 	
+	my $crypter = new Crypter(password => $password, obfuscate => $OBFUSCATE_LEVEL);
+	$out = $crypter->crypt($text);
+		
 	my $fh;
 	open $fh, '>', $NOTE_FILE;
 	binmode $fh;
